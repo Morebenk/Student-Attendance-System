@@ -110,12 +110,16 @@ export default {
     },
     formatTimestamp(timestamp) {
       const date = new Date(timestamp);
+      // Format date as 'YYYY-MM-DD'
+      const formattedDate = date.toISOString().split("T")[0];
+      // Format time as 'HH:MM AM/PM'
       const hours = date.getHours();
       const minutes = date.getMinutes();
       const ampm = hours >= 12 ? "PM" : "AM";
       const formattedHours = hours % 12 || 12; // Convert 0 to 12 for AM
       const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
-      return `${formattedHours}:${formattedMinutes} ${ampm}`;
+      // Combine date and time
+      return `${formattedDate} ${formattedHours}:${formattedMinutes} ${ampm}`;
     },
   },
 };
