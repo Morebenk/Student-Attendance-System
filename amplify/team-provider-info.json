@@ -10,6 +10,14 @@
       "StackName": "amplify-attendancesystem-dev-200334",
       "StackId": "arn:aws:cloudformation:eu-west-2:121767535248:stack/amplify-attendancesystem-dev-200334/f93cc910-a67c-11ee-9449-020f132c4248",
       "AmplifyAppId": "dfs3nxd3ry51b"
+    },
+    "categories": {
+      "hosting": {
+        "amplifyhosting": {
+          "appId": "dfs3nxd3ry51b",
+          "type": "cicd"
+        }
+      }
     }
   }
 }

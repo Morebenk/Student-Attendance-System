@@ -14,17 +14,22 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="record in records" :key="record.StudentID">
+        <tr
+          v-for="record in combinedRecords"
+          :key="record.studentId + record.timestamp"
+        >
           <td>{{ record.firstName }}</td>
           <td>{{ record.lastName }}</td>
-          <td>{{ record.Timestamp }}</td>
-          <td>{{ record.AttendanceStatus }}</td>
-          <td>{{ record.ClassName }}</td>
-          <td>{{ record.MajorName }}</td>
-          <td>{{ record.Instructor }}</td>
+          <td>{{ record.timestamp }}</td>
+          <td>{{ record.attendanceStatus }}</td>
+          <td>{{ record.className }}</td>
+          <td>{{ record.majorName }}</td>
+          <td>{{ record.instructor }}</td>
         </tr>
       </tbody>
     </table>
+    <div v-if="isLoading">Loading...</div>
+    <div v-if="error">{{ error }}</div>
   </div>
 </template>
 
@@ -34,20 +39,69 @@ import axios from "axios";
 export default {
   data() {
     return {
-      records: [],
+      attendanceRecords: [],
+      combinedRecords: [],
+      isLoading: false,
+      error: null,
     };
   },
   async created() {
-    try {
-      const response = await axios.get(
-        "https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/attendance"
+    await this.fetchAllAttendanceRecords();
+  },
+  methods: {
+    async fetchAllAttendanceRecords() {
+      this.isLoading = true;
+      try {
+        // Replace with your actual API endpoint
+        const attendanceResponse = await axios.get(
+          "https://your-api-gateway-url/attendance"
+        );
+        this.attendanceRecords = attendanceResponse.data;
+        await this.combineRecords();
+      } catch (error) {
+        this.error = "Failed to fetch attendance records: " + error;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async combineRecords() {
+      this.combinedRecords = await Promise.all(
+        this.attendanceRecords.map(async (record) => {
+          try {
+            // Fetch additional details for each record
+            const studentDetails = await this.fetchStudentDetails(
+              record.StudentID
+            );
+            const classDetails = await this.fetchClassDetails(record.ClassID); // Assume ClassID is part of the record
+            const majorDetails = await this.fetchMajorDetails(
+              studentDetails.majorId
+            );
+
+            // Combine all details into a single object
+            return {
+              ...record,
+              firstName: studentDetails.firstName,
+              lastName: studentDetails.lastName,
+              className: classDetails.className,
+              majorName: majorDetails.majorName,
+              instructor: classDetails.instructor,
+            };
+          } catch (error) {
+            console.error("Error combining records:", error);
+            return record; // Return original record if any fetch fails
+          }
+        })
       );
-      this.records = response.data;
-      console.log(this.records);
-      // For additional data fetching and augmentation, implement here
-    } catch (error) {
-      console.error("Error fetching attendance records:", error);
-    }
+    },
+    async fetchStudentDetails(studentId) {
+      // Replace with actual API/DB call
+    },
+    async fetchClassDetails(classId) {
+      // Replace with actual API/DB call
+    },
+    async fetchMajorDetails(majorId) {
+      // Replace with actual API/DB call
+    },
   },
 };
 </script>
