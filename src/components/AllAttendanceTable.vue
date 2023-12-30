@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>All Attendance Records</h1>
-    <table>
+    <table class="attendance-table">
       <thead>
         <tr>
           <th>First Name</th>
@@ -20,7 +20,7 @@
         >
           <td>{{ record.firstName }}</td>
           <td>{{ record.lastName }}</td>
-          <td>{{ record.Timestamp }}</td>
+          <td>{{ formatTimestamp(record.Timestamp) }}</td>
           <td>{{ record.AttendanceStatus }}</td>
           <td>{{ record.className }}</td>
           <td>{{ record.majorName }}</td>
@@ -52,7 +52,6 @@ export default {
     async fetchAllAttendanceRecords() {
       this.isLoading = true;
       try {
-        // Replace with your actual API endpoint for attendance records
         const attendanceResponse = await axios.get(
           "https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/attendance"
         );
@@ -67,9 +66,8 @@ export default {
     async combineRecords() {
       this.combinedRecords = await Promise.all(
         this.attendanceRecords.map(async (record) => {
-          const [date, classId] = record["Date#ClassID"].split("#");
+          const [, classId] = record["Date#ClassID"].split("#");
           try {
-            // Fetch additional details for each record
             const studentDetails = await this.fetchStudentDetails(
               record.StudentID
             );
@@ -78,7 +76,6 @@ export default {
               studentDetails.majorId
             );
 
-            // Combine all details into a single object
             return {
               ...record,
               ...studentDetails,
@@ -88,33 +85,59 @@ export default {
             };
           } catch (error) {
             console.error("Error combining records:", error);
-            return { ...record, error: "Failed to fetch additional data" }; // Return original record with error note
+            return { ...record, error: "Failed to fetch additional data" };
           }
         })
       );
     },
     async fetchStudentDetails(studentId) {
       const response = await axios.get(
-        `https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/students/${studentId}`
+        `https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/Students/${studentId}`
       );
-      return response.data; // Transform this as needed based on your API response
+      return response.data;
     },
     async fetchClassDetails(classId) {
       const response = await axios.get(
-        `https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/classes/${classId}`
+        `https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/Classes/${classId}`
       );
-      return response.data; // Transform this as needed based on your API response
+      return response.data;
     },
     async fetchMajorDetails(majorId) {
       const response = await axios.get(
-        `https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/majors/${majorId}`
+        `https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/Majors/${majorId}`
       );
-      return response.data; // Transform this as needed based on your API response
+      return response.data;
+    },
+    formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      const hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const formattedHours = hours % 12 || 12; // Convert 0 to 12 for AM
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+      return `${formattedHours}:${formattedMinutes} ${ampm}`;
     },
   },
 };
 </script>
 
 <style>
-/* Add styles for your table here */
+/* Add your styles for the table */
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.attendance-table th {
+  background-color: #f2f2f2;
+}
+
+/* You can customize the styles further as needed */
 </style>
