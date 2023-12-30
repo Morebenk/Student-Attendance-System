@@ -54,7 +54,7 @@ export default {
       try {
         // Replace with your actual API endpoint
         const attendanceResponse = await axios.get(
-          "https://your-api-gateway-url/attendance"
+          "https://843ix1dpk7.execute-api.eu-west-2.amazonaws.com/prod/attendance"
         );
         this.attendanceRecords = attendanceResponse.data;
         await this.combineRecords();
